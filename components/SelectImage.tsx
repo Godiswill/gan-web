@@ -12,10 +12,10 @@ import { exampleImgs, smallModelKey } from '@/lib/const';
 import { removeBackground } from '@/lib/remover';
 import { isMobileDevice } from '@/lib/remover/utils';
 import { ImageType } from '@/lib/types';
-// import PreviewDownload from './PreviewDownload';
-const PreviewDownload = dynamic(() => import('./PreviewDownload'), {
-  ssr: false,
-});
+import PreviewDownload from './PreviewDownload';
+// const PreviewDownload = dynamic(() => import('./PreviewDownload'), {
+//   ssr: false,
+// });
 
 export default function SelectImage() {
   const fileInputId = useId();

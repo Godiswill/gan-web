@@ -1,9 +1,7 @@
 'use client';
-import dynamic from 'next/dynamic';
-import Navigation from './Navigation';
-// import ThemeIcon from './ThemeIcon';
 
-const ThemeIcon = dynamic(() => import('./ThemeIcon'), { ssr: false });
+import Navigation from './Navigation';
+import ThemeIcon from './ThemeIcon';
 
 export default function Header() {
   return (

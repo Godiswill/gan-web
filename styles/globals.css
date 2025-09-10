@@ -4,30 +4,48 @@
 /* @custom-variant dark (&:where(.dark, .dark *)); */
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
-/* :root {
-  --background: #ffffff;
-  --foreground: #171717;
-} */
+:root {
+  --background: var(--color-white);
+  --foreground: var(--color-gray-950);
+}
 
-/* @theme inline {
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: var(--color-gray-950);
+    --foreground: var(--color-white);
+  }
+}
+
+html[data-theme='light'] {
+  --background: var(--color-white);
+  --foreground: var(--color-gray-950);
+}
+
+html[data-theme='light'] .moon-icon {
+  display: none;
+}
+
+html[data-theme='dark'] {
+  --background: var(--color-gray-950);
+  --foreground: var(--color-white);
+}
+
+html[data-theme='dark'] .sun-icon {
+  display: none;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-} */
-
-/* @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-} */
-
-/* body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-} */
+}
 
 button {
   @apply cursor-pointer;
