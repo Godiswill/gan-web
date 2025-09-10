@@ -16,19 +16,19 @@ const nextConfig = {
 
   async headers() {
     return [
-      // {
-      //   source: '/',
-      //   headers: [
-      //     {
-      //       key: 'Cross-Origin-Opener-Policy',
-      //       value: 'same-origin',
-      //     },
-      //     {
-      //       key: 'Cross-Origin-Embedder-Policy',
-      //       value: 'require-corp',
-      //     },
-      //   ],
-      // },
+      {
+        source: '/',
+        headers: [
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin',
+          },
+          {
+            key: 'Cross-Origin-Embedder-Policy',
+            value: 'require-corp',
+          },
+        ],
+      },
       {
         source: '/_models/:path*', // *
         headers: [
@@ -39,6 +39,28 @@ const nextConfig = {
           {
             key: 'Cross-Origin-Embedder-Policy',
             value: 'require-corp',
+          },
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/images/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/eruda.js',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
           },
         ],
       },
