@@ -1,0 +1,2 @@
+patchedDependencies:
+  onnxruntime-web@1.18.0: patches/onnxruntime-web@1.18.0.patch
