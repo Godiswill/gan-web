@@ -11,7 +11,6 @@ const ConfigSchema = z
   .object({
     publicPath: z
       .string()
-      .optional()
       .describe('The public path to the wasm files and the onnx model.')
       .default(
         'https://staticimgly.com/@imgly/background-removal-data/${PACKAGE_VERSION}/dist/'
@@ -23,7 +22,8 @@ const ConfigSchema = z
             // .replace('${PACKAGE_VERSION}', pkg.version);
             .replace('${PACKAGE_VERSION}', '1.5.3')
         );
-      }),
+      })
+      .optional(),
     debug: z
       .boolean()
       .default(false)
