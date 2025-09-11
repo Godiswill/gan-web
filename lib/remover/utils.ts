@@ -136,7 +136,7 @@ async function imageSourceToImageData(
   config: Config
 ): Promise<NdArray<Uint8Array>> {
   if (typeof image === 'string') {
-    image = ensureAbsoluteURI(image, config.publicPath);
+    image = ensureAbsoluteURI(image, config.publicPath as string);
     image = new URL(image);
   }
   if (image instanceof URL) {
