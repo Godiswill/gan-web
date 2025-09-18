@@ -10,3 +10,5 @@ export const exampleImgs = [
 ];
 
 export const smallModelKey = 'WasmOnnxModel';
+
+export const inputId = 'input-select-img';
