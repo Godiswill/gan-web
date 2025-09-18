@@ -1,16 +1,17 @@
 'use client';
 
 import Image from 'next/image';
-import dynamic from 'next/dynamic';
-import { useState, useId, useEffect, useRef, useCallback } from 'react';
+// import dynamic from 'next/dynamic';
+import { useState, useEffect, useRef, useCallback } from 'react';
 // import { removeBackground } from '@imgly/background-removal';
 import JSZip from 'jszip';
 import FileSaver from 'file-saver';
-import { CloudUploadIcon } from '@/components/svg';
+// import { CloudUploadIcon } from '@/components/svg';
+import { CloudUploadIcon } from 'lucide-react';
 import { formatTime } from '@/lib/utils';
-import { exampleImgs, smallModelKey } from '@/lib/const';
-import { removeBackground } from '@/lib/remover';
-import { isMobileDevice } from '@/lib/remover/utils';
+import { exampleImgs, smallModelKey, inputId } from '@/lib/utils/const';
+import { removeBackground } from '@/lib/utils/remover';
+import { isMobileDevice } from '@/lib/utils/remover/utils';
 import { ImageType } from '@/lib/types';
 import PreviewDownload from './PreviewDownload';
 // const PreviewDownload = dynamic(() => import('./PreviewDownload'), {
@@ -18,7 +19,9 @@ import PreviewDownload from './PreviewDownload';
 // });
 
 export default function SelectImage() {
-  const fileInputId = useId();
+  // const fileInputId = useId();
+  // const fileInputId = useRef(`input-${crypto.randomUUID()}`).current;
+  const fileInputId = inputId;
   const [isLoading, setIsLoading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [outOfMemory, setOutOfMemory] = useState(false);
