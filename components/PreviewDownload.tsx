@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import FileSaver from 'file-saver';
+import { formatFileSize } from '@/lib/utils'
 import ImgCompareSlider from './ImgCompareSlider';
 import ImgModal from './ImgModal';
-import FileSaver from 'file-saver';
 
 export interface IPreviewDownloadProps {
   beforeFile: Blob & { name: string };
@@ -11,14 +12,6 @@ export interface IPreviewDownloadProps {
   processing: boolean;
   className?: string;
   onClose: () => void;
-}
-
-function formatFileSize(bytes: number) {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
 export default function PreviewDownload({
