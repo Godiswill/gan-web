@@ -6,6 +6,8 @@ import { SessionProvider } from 'next-auth/react';
 import Header from '@/components/layouts/Header';
 import Footer from '@/components/layouts/Footer';
 import DebugMobile from '@/components/DebugMobile';
+import { Toaster } from '@/components/ui/sonner';
+
 import '@/styles/globals.css';
 
 const geistSans = Geist({
@@ -47,6 +49,7 @@ export default function RootLayout({
         {/* <!-- Google tag (gtag.js) --> */}
         <GoogleAnalytics gaId="G-CZS9K7V64W" />
         <DebugMobile />
+        <Toaster />
       </body>
     </html>
   );
