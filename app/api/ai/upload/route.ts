@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fal } from '@fal-ai/client';
+import { ok, fail } from '@/lib/services/api-response';
 
 fal.config({
   credentials: process.env.FAL_KEY as string,
@@ -11,21 +12,15 @@ export async function POST(request: NextRequest) {
     const file = formData.get('file') as File;
 
     if (!file) {
-      return NextResponse.json(
-        { error: '请选择要上传的文件' },
-        { status: 400 }
-      );
+      return fail(400, 'Invalid parameters', 400);
     }
 
     const fileUrl = await fal.storage.upload(file);
 
-    return NextResponse.json({
-      success: true,
-      url: fileUrl,
-    });
+    return ok(fileUrl);
   } catch (error) {
     console.error('上传失败:', error);
-    return NextResponse.json({ error: '上传失败，请重试' }, { status: 500 });
+    return fail(500, 'Internal Server Error', 500);
   }
 }
 

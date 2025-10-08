@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { ok } from '@/lib/services/api-response';
 
 const AVAILABLE_MODELS = [
   {
@@ -17,13 +18,11 @@ const AVAILABLE_MODELS = [
 ];
 
 export async function GET() {
-  return NextResponse.json({
-    success: true,
-    models: AVAILABLE_MODELS,
-  });
+  return ok(AVAILABLE_MODELS);
 }
 
 export const MODELS_MAP = {
+  v0: 'fal-ai/nano-banana/edit',
   v1: 'fal-ai/flux/dev',
   v2: 'fal-ai/flux/schnell',
   v3: 'custom-model/v3',
