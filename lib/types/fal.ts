@@ -1,13 +1,55 @@
 // -- fal --
-export type ModelId = 'v1' | 'v2' | 'v3';
+export type ModelId = 'v0' | 'v1' | 'v2' | 'v3';
+
+export type FalQueueParams = {
+  modelId: string | ModelId;
+  requestId: string;
+};
 
 export interface FalUploadResponse {
   file_url: string;
   file_name: string;
   content_type: string;
 }
-export interface FalGenerateRequest {
-  model: ModelId;
+
+// 21:9, 1:1, 4:3, 3:2, 2:3, 5:4, 4:5, 3:4, 16:9, 9:16
+enum AspectRatio {
+  '21:9' = '21:9',
+  '1:1' = '1:1',
+  '4:3' = '4:3',
+  '3:2' = '3:2',
+  '2:3' = '2:3',
+  '5:4' = '5:4',
+  '4:5' = '4:5',
+  '3:4' = '3:4',
+  '16:9' = '16:9',
+  '9:16' = '9:16',
+}
+
+export interface NanoBananaRequest {
+  modelId: ModelId;
+  prompt: string;
+  files?: File[];
+  image_urls: string[];
+  num_images?: number;
+  output_format?: 'jpeg' | 'png';
+  sync_mode?: boolean;
+  aspect_ratio?:
+    | '21:9'
+    | '1:1'
+    | '4:3'
+    | '3:2'
+    | '2:3'
+    | '5:4'
+    | '4:5'
+    | '3:4'
+    | '16:9'
+    | '9:16';
+  [key: string]: any;
+}
+
+export interface FluxRequest {
+  modelId: ModelId;
   prompt: string;
   image_size?:
     | 'square_hd'
@@ -24,10 +66,12 @@ export interface FalGenerateRequest {
   expand_prompt?: boolean;
   format?: 'jpeg' | 'png';
   // 文件相关参数 - 后端会处理文件上传
-  image_file?: File; // 用于 img2img 等需要输入图片的场景
+  files?: File[]; // 用于 img2img 等需要输入图片的场景
   mask_file?: File; // 用于 inpainting 等需要遮罩的场景
   [key: string]: any; // 允许其他参数
 }
+
+export type FalGenerateRequest = NanoBananaRequest | FluxRequest;
 
 export interface FalGenerateResponse {
   images: Array<{
@@ -45,7 +89,7 @@ export interface FalGenerateResponse {
 }
 
 export interface FalAsyncResponse {
-  model: ModelId;
+  model_id: ModelId;
   request_id: string;
   status: 'IN_QUEUE' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED';
 }

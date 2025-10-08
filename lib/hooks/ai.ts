@@ -46,23 +46,18 @@ export function useFalUpload() {
 const prepareRequestData = (
   params: FalGenerateRequest
 ): FormData | FalGenerateRequest => {
-  const { image_file, mask_file, ...otherParams } = params;
+  const { files, ...otherParams } = params;
 
   // 如果没有文件，直接返回 JSON 数据
-  if (!image_file && !mask_file) {
-    return otherParams;
+  if (!files?.length) {
+    return params;
   }
 
   // 如果有文件，使用 FormData
   const formData = new FormData();
 
   // 添加文件
-  if (image_file) {
-    formData.append('image_file', image_file);
-  }
-  if (mask_file) {
-    formData.append('mask_file', mask_file);
-  }
+  files?.forEach((file) => formData.append('files', file));
 
   // 添加其他参数
   Object.entries(otherParams).forEach(([key, value]) => {
@@ -141,7 +136,7 @@ export function useFalGenerateAsync() {
 
 // 状态查询 Hook
 export function useFalStatus(
-  model: ModelId | null,
+  modelId: ModelId | null,
   requestId: string | null,
   options?: {
     refreshInterval?: number;
@@ -154,7 +149,7 @@ export function useFalStatus(
   } = options || {};
 
   const { data, error, isLoading, mutate } = useGet<FalStatusResponse>(
-    model && requestId ? `/api/ai/status/${model}/${requestId}` : null,
+    modelId && requestId ? `/api/ai/status/${modelId}/${requestId}` : null,
     {
       refreshInterval,
       revalidateOnFocus: false,
@@ -178,9 +173,12 @@ export function useFalStatus(
 }
 
 // 结果获取 Hook
-export function useFalResult(model: ModelId | null, requestId: string | null) {
+export function useFalResult(
+  modelId: ModelId | null,
+  requestId: string | null
+) {
   const { data, error, isLoading, mutate } = useGet<FalResultResponse>(
-    model && requestId ? `/api/ai/result/${model}/${requestId}` : null,
+    modelId && requestId ? `/api/ai/result/${modelId}/${requestId}` : null,
     {
       revalidateOnFocus: false,
       errorRetryCount: 1, // 只重试一次
@@ -197,7 +195,7 @@ export function useFalResult(model: ModelId | null, requestId: string | null) {
 
 // 完整的异步生成流程 Hook
 export function useFalAsyncGeneration() {
-  const [model, setModel] = useState<ModelId | null>(null);
+  const [modelId, setModelId] = useState<ModelId | null>(null);
   const [requestId, setRequestId] = useState<string | null>(null);
   const [isComplete, setIsComplete] = useState(false);
 
@@ -210,7 +208,7 @@ export function useFalAsyncGeneration() {
     status,
     logs,
     error: statusError,
-  } = useFalStatus(model, requestId, {
+  } = useFalStatus(modelId, requestId, {
     shouldStop: (status) => {
       const isDone = ['COMPLETED', 'FAILED'].includes(status);
       if (isDone) {
@@ -221,12 +219,12 @@ export function useFalAsyncGeneration() {
   });
   const isSuccess = isComplete && status === 'COMPLETED';
   const { result, error: resultError } = useFalResult(
-    isSuccess ? model : null,
+    isSuccess ? modelId : null,
     isSuccess ? requestId : null
   );
 
   const reset = useCallback(() => {
-    setModel(null);
+    setModelId(null);
     setRequestId(null);
     setIsComplete(false);
   }, []);
@@ -236,7 +234,7 @@ export function useFalAsyncGeneration() {
       reset();
       try {
         const response = await generateAsync(params);
-        setModel(response.model);
+        setModelId(response.model_id);
         setRequestId(response.request_id);
         return response;
       } catch (error) {
@@ -255,7 +253,7 @@ export function useFalAsyncGeneration() {
     logs,
     result,
     isSubmitting,
-    isInProgress: requestId && !isComplete,
+    isInProgress: !!requestId && !isComplete,
     error: submitError || statusError || resultError,
   };
 }
