@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import { GoogleAnalytics } from '@next/third-parties/google';
 import { SessionProvider } from 'next-auth/react';
 
+import ErrorHandlerProvider from '@/components/layouts/ErrorHandlerProvider';
 import Header from '@/components/layouts/Header';
 import Footer from '@/components/layouts/Footer';
 import DebugMobile from '@/components/DebugMobile';
@@ -41,15 +42,18 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SessionProvider>
-          <Header />
-          <main>{children}</main>
-          <Footer />
-        </SessionProvider>
+        <ErrorHandlerProvider>
+          <SessionProvider>
+            <Header />
+            <main>{children}</main>
+            <Footer />
+          </SessionProvider>
+        </ErrorHandlerProvider>
+
         {/* <!-- Google tag (gtag.js) --> */}
         <GoogleAnalytics gaId="G-CZS9K7V64W" />
         <DebugMobile />
-        <Toaster />
+        <Toaster richColors />
       </body>
     </html>
   );

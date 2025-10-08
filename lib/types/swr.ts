@@ -9,8 +9,11 @@ export interface RequestConfig {
   cache?: RequestCache;
 }
 
-export interface FetcherConfig extends RequestConfig {
+export interface FetcherConfig {
   baseURL?: string;
+  timeout?: number;
+  headers?: Record<string, string>;
+  params?: Record<string, any>;
   transformRequest?: (data: any) => any;
   transformResponse?: (data: any) => any;
   onError?: (error: Error) => void;
@@ -43,5 +46,37 @@ export class HttpError extends Error {
     this.name = 'HttpError';
     this.status = status;
     this.info = info;
+  }
+}
+
+// -- api error --
+export interface ApiErrorResponse {
+  code: string | number;
+  message: string;
+  details?: any;
+  timestamp?: string;
+  path?: string;
+}
+
+export class ApiError extends Error {
+  code: string | number;
+  status: number;
+  details?: any;
+  timestamp?: string;
+  path?: string;
+
+  constructor(
+    message: string,
+    code: string | number,
+    status: number,
+    info?: ApiErrorResponse
+  ) {
+    super(message);
+    this.name = 'ApiError';
+    this.code = code;
+    this.status = status;
+    this.details = info?.details;
+    this.timestamp = info?.timestamp;
+    this.path = info?.path;
   }
 }

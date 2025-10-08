@@ -1,4 +1,10 @@
-import { FetcherConfig, RequestConfig, HttpError } from '@/lib/types/swr';
+import {
+  FetcherConfig,
+  RequestConfig,
+  ApiError,
+  ApiErrorResponse,
+} from '@/lib/types/swr';
+import { GlobalErrorHandler } from '@/lib/utils/errorHandler';
 
 // 通用 fetcher 函数
 export const createFetcher = (defaultConfig: FetcherConfig = {}) => {
@@ -11,6 +17,8 @@ export const createFetcher = (defaultConfig: FetcherConfig = {}) => {
     onSuccess,
     ...defaultRequestConfig
   } = defaultConfig;
+
+  const errorHandler = GlobalErrorHandler.getInstance();
 
   return async (url: string, config: RequestConfig = {}) => {
     const {
@@ -64,20 +72,31 @@ export const createFetcher = (defaultConfig: FetcherConfig = {}) => {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        let errorInfo;
+        let errorInfo: ApiErrorResponse;
         try {
           errorInfo = await response.json();
         } catch {
-          errorInfo = await response.text();
+          // 如果解析 JSON 失败，使用默认错误信息
+          errorInfo = {
+            code: response.status,
+            message: response.statusText || 'Unknown error',
+          };
         }
-
-        const error = new HttpError(
-          `HTTP Error: ${response.status} ${response.statusText}`,
+        debugger;
+        // 创建 ApiError 实例
+        const error = new ApiError(
+          errorInfo.message || `HTTP Error: ${response.status}`,
+          errorInfo.code || response.status,
           response.status,
           errorInfo
         );
 
+        // 使用全局错误处理器
+        errorHandler.handle(error);
+
+        // 调用自定义错误处理
         if (onError) onError(error);
+
         throw error;
       }
 
@@ -100,14 +119,25 @@ export const createFetcher = (defaultConfig: FetcherConfig = {}) => {
     } catch (error) {
       clearTimeout(timeoutId);
 
+      if (error instanceof ApiError) {
+        throw error;
+      }
+
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
-          const timeoutError = new HttpError('Request timeout', 408);
+          const timeoutError = new ApiError('Request timeout', 'TIMEOUT', 408);
+          errorHandler.handle(timeoutError);
           if (onError) onError(timeoutError);
           throw timeoutError;
         }
-        if (onError) onError(error);
+
+        // 网络错误
+        const networkError = new ApiError('Network error', 'NETWORK_ERROR', 0);
+        errorHandler.handle(networkError);
+        if (onError) onError(networkError);
+        throw networkError;
       }
+
       throw error;
     }
   };
