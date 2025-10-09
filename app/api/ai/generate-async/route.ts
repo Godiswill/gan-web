@@ -10,6 +10,9 @@ fal.config({
 });
 
 export async function POST(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const isMock = !!searchParams.get('mock');
+
   try {
     const formData = await request.formData();
 
@@ -52,9 +55,14 @@ export async function POST(request: NextRequest) {
           return fail(400, 'Invalid parameters', 400);
         }
       }
+      image_urls = [];
       try {
         console.log('正在上传参考图片...');
         for (const img of images) {
+          if (isMock) {
+            image_urls.push('https://via.placeholder.com/512');
+            continue;
+          }
           const image_url = await uploadFileToFAL(img);
           console.log('参考图片上传成功:', image_url);
           image_urls.push(image_url);
@@ -67,6 +75,13 @@ export async function POST(request: NextRequest) {
 
     if (!image_urls.length) {
       return fail(400, 'Invalid parameters', 400);
+    }
+
+    if (isMock) {
+      return ok({
+        request_id: 'mock-request-id',
+        model_id: modelId,
+      });
     }
 
     // 提交异步任务，立即返回任务ID

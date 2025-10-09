@@ -12,10 +12,27 @@ export async function GET(
   request: NextRequest,
   context: { params: Promise<FalQueueParams> }
 ) {
+  const { searchParams } = new URL(request.url);
+  const isMock = !!searchParams.get('mock');
+
   const { modelId, requestId } = await context.params;
   const model = MODELS_MAP[modelId as ModelId];
   if (!model || !requestId) {
     return fail(400, 'Invalid parameters', 400);
+  }
+
+  if (isMock) {
+    return ok({
+      images: [
+        {
+          url: 'https://v3b.fal.media/files/b/zebra/YgbpBc91qKsaoST0BXMxM.jpg',
+          content_type: 'image/jpeg',
+          file_name: 'output.jpeg',
+          file_size: null,
+        },
+      ],
+      description: '',
+    });
   }
 
   try {
