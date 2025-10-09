@@ -7,6 +7,7 @@ import {
   DownloadIcon,
   EyeIcon,
 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ImagePreview({
   src = '',
@@ -59,11 +60,31 @@ export default function ImagePreview({
   //   setRotation((prev) => (prev + 90) % 360);
   // };
 
-  const download = useCallback(() => {
-    const link = document.createElement('a');
-    link.href = src;
-    link.download = alt || 'image';
-    link.click();
+  const download = useCallback(async () => {
+    // 如果是同源图片，直接下载
+    if (src.includes(location.origin)) {
+      const link = document.createElement('a');
+      link.href = src;
+      link.download = alt || 'image';
+      link.click();
+      return;
+    }
+
+    // 非同源，浏览器会给在当前页面加载图片
+    try {
+      const res = await fetch(src, { mode: 'cors' }); // 如果 FAL CDN 允许跨域
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = alt || 'image';
+      link.click();
+
+      URL.revokeObjectURL(url); // 释放内存
+    } catch (err) {
+      console.error('Download failed:', err);
+    }
   }, [src, alt]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -81,7 +102,6 @@ export default function ImagePreview({
   };
 
   const handleWheel = (e: React.WheelEvent) => {
-    // debugger;
     // e.preventDefault();
     if (e.deltaY < 0) {
       zoomIn();
@@ -121,13 +141,15 @@ export default function ImagePreview({
         className={`relative inline-block ${className}`}
         style={{ width, height }}
       >
+        <Skeleton className="absolute inset-0" />
         <img
+          referrerPolicy="no-referrer"
           src={`${currentSrc}`}
           alt={alt}
           // onLoad={handleImageLoad}
           onError={handleImageError}
           className={`
-            w-full h-full object-cover rounded-lg 
+            relative w-full h-full object-cover rounded-lg 
             ${
               preview && imageError
                 ? 'cursor-pointer hover:opacity-80 transition-opacity'
@@ -169,6 +191,7 @@ export default function ImagePreview({
           {/* 预览图片 */}
           <div className="relative max-w-full max-h-full" onWheel={handleWheel}>
             <img
+              referrerPolicy="no-referrer"
               src={currentSrc}
               alt={alt}
               className={`
