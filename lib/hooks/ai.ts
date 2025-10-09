@@ -144,7 +144,7 @@ export function useFalStatus(
   }
 ) {
   const {
-    refreshInterval = 2000, // 默认每2秒轮询一次
+    refreshInterval = 0, // 默认不轮询
     shouldStop = (status: string) => ['COMPLETED', 'FAILED'].includes(status),
   } = options || {};
 
@@ -153,19 +153,17 @@ export function useFalStatus(
     {
       refreshInterval,
       revalidateOnFocus: false,
-      dedupingInterval: 1000,
       onSuccess: (data) => {
-        if (shouldStop(data.status)) {
-          // 停止轮询
-          mutate(data, false);
+        if (shouldStop(data.data.status)) {
+          // mutate(data, false);
         }
       },
     }
   );
-
   return {
-    status: data?.status,
-    logs: data?.logs,
+    inferenceTime: data?.data?.metrics?.inference_time,
+    status: data?.data?.status,
+    logs: data?.data?.logs,
     isLoading,
     error: error as FalError | undefined,
     refresh: mutate,
@@ -179,11 +177,19 @@ export function useFalResult(
 ) {
   const { data, error, isLoading, mutate } = useGet<FalResultResponse>(
     modelId && requestId ? `/api/ai/result/${modelId}/${requestId}` : null,
+    // '/api/ai/result/v0/90a02a75-cc85-490b-9183-98f2c3480bbd',
     {
       revalidateOnFocus: false,
       errorRetryCount: 1, // 只重试一次
     }
   );
+
+  console.log({
+    result: data,
+    isLoading,
+    error: error as FalError | undefined,
+    refresh: mutate,
+  });
 
   return {
     result: data,
@@ -205,10 +211,12 @@ export function useFalAsyncGeneration() {
     error: submitError,
   } = useFalGenerateAsync();
   const {
+    inferenceTime,
     status,
     logs,
     error: statusError,
   } = useFalStatus(modelId, requestId, {
+    refreshInterval: isComplete ? 0 : 2000, // 完成后停止轮询
     shouldStop: (status) => {
       const isDone = ['COMPLETED', 'FAILED'].includes(status);
       if (isDone) {
@@ -218,10 +226,11 @@ export function useFalAsyncGeneration() {
     },
   });
   const isSuccess = isComplete && status === 'COMPLETED';
-  const { result, error: resultError } = useFalResult(
-    isSuccess ? modelId : null,
-    isSuccess ? requestId : null
-  );
+  const {
+    result,
+    error: resultError,
+    isLoading,
+  } = useFalResult(isSuccess ? modelId : null, isSuccess ? requestId : null);
 
   const reset = useCallback(() => {
     setModelId(null);
@@ -234,8 +243,8 @@ export function useFalAsyncGeneration() {
       reset();
       try {
         const response = await generateAsync(params);
-        setModelId(response.model_id);
-        setRequestId(response.request_id);
+        setModelId(response?.data?.model_id ?? null);
+        setRequestId(response?.data?.request_id ?? null);
         return response;
       } catch (error) {
         console.error('Failed to start generation:', error);
@@ -245,6 +254,7 @@ export function useFalAsyncGeneration() {
     [generateAsync, reset]
   );
 
+  const isInProgress = !!requestId && !isComplete;
   return {
     generate,
     reset,
@@ -253,7 +263,9 @@ export function useFalAsyncGeneration() {
     logs,
     result,
     isSubmitting,
-    isInProgress: !!requestId && !isComplete,
+    isInProgress,
+    isLoading: isSubmitting || isInProgress || isLoading,
+    inferenceTime,
     error: submitError || statusError || resultError,
   };
 }

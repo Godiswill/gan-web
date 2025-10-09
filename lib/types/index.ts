@@ -18,10 +18,3 @@ export type ImageFilesInfo = Array<{
   width: number;
   height: number;
 }>;
-
-export type ApiResponse<T = any> = {
-  success: boolean;
-  code?: number;
-  data?: T;
-  message?: string;
-};

@@ -7,7 +7,10 @@ import {
 import { GlobalErrorHandler } from '@/lib/utils/errorHandler';
 
 // 通用 fetcher 函数
-export const createFetcher = (defaultConfig: FetcherConfig = {}) => {
+export const createFetcher = (
+  fetcherConfig: FetcherConfig = {},
+  requestConfig: RequestConfig = {}
+) => {
   const {
     baseURL = '',
     timeout = 10000,
@@ -15,10 +18,11 @@ export const createFetcher = (defaultConfig: FetcherConfig = {}) => {
     transformResponse,
     onError,
     onSuccess,
-    ...defaultRequestConfig
-  } = defaultConfig;
+  } = fetcherConfig;
 
   const errorHandler = GlobalErrorHandler.getInstance();
+
+  const isMock = true; // 全局 mock 开关
 
   return async (url: string, config: RequestConfig = {}) => {
     const {
@@ -26,8 +30,8 @@ export const createFetcher = (defaultConfig: FetcherConfig = {}) => {
       headers = {},
       body,
       params,
-      ...requestConfig
-    } = { ...defaultRequestConfig, ...config };
+      ...restConfig
+    } = { ...requestConfig, ...config };
 
     // 构建完整 URL
     let fullUrl = baseURL + url;
@@ -41,6 +45,10 @@ export const createFetcher = (defaultConfig: FetcherConfig = {}) => {
         }
       });
       fullUrl += `?${searchParams.toString()}`;
+    }
+
+    if (isMock) {
+      fullUrl += (fullUrl.includes('?') ? '&' : '?') + 'mock=true';
     }
 
     // 处理请求体
@@ -66,13 +74,14 @@ export const createFetcher = (defaultConfig: FetcherConfig = {}) => {
         headers,
         body: processedBody,
         signal: controller.signal,
-        ...requestConfig,
+        ...restConfig,
       });
 
       clearTimeout(timeoutId);
 
       if (!response.ok) {
         let errorInfo: ApiErrorResponse;
+
         try {
           errorInfo = await response.json();
         } catch {
@@ -82,7 +91,7 @@ export const createFetcher = (defaultConfig: FetcherConfig = {}) => {
             message: response.statusText || 'Unknown error',
           };
         }
-        debugger;
+
         // 创建 ApiError 实例
         const error = new ApiError(
           errorInfo.message || `HTTP Error: ${response.status}`,

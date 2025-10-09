@@ -1,3 +1,10 @@
+export type ApiResponse<T = any> = {
+  success: boolean;
+  code?: number;
+  data?: T;
+  message?: string;
+};
+
 // -- fal --
 export type ModelId = 'v0' | 'v1' | 'v2' | 'v3';
 
@@ -6,11 +13,29 @@ export type FalQueueParams = {
   requestId: string;
 };
 
-export interface FalUploadResponse {
-  file_url: string;
-  file_name: string;
-  content_type: string;
-}
+export type FalStatusResponse = ApiResponse<{
+  status: 'IN_QUEUE' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED';
+  request_id: string;
+  response_url: string | null;
+  status_url: string | null;
+  cancel_url: string | null;
+  metrics: {
+    inference_time: number;
+  };
+  logs?: Array<{
+    message: string;
+    level: string;
+    timestamp: string;
+  }>;
+}>;
+
+export type FalUploadResponse = ApiResponse<string>;
+
+export type FalAsyncResponse = ApiResponse<{
+  model_id: ModelId;
+  request_id: string;
+  // status: 'IN_QUEUE' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED';
+}>;
 
 // 21:9, 1:1, 4:3, 3:2, 2:3, 5:4, 4:5, 3:4, 16:9, 9:16
 enum AspectRatio {
@@ -73,7 +98,7 @@ export interface FluxRequest {
 
 export type FalGenerateRequest = NanoBananaRequest | FluxRequest;
 
-export interface FalGenerateResponse {
+export type FluxResultResponse = ApiResponse<{
   images: Array<{
     url: string;
     width: number;
@@ -86,26 +111,21 @@ export interface FalGenerateResponse {
   seed: number;
   has_nsfw_concepts: boolean[];
   prompt: string;
-}
+}>;
 
-export interface FalAsyncResponse {
-  model_id: ModelId;
-  request_id: string;
-  status: 'IN_QUEUE' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED';
-}
-
-export interface FalStatusResponse {
-  status: 'IN_QUEUE' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED';
-  logs?: Array<{
-    message: string;
-    level: string;
-    timestamp: string;
+export type NanoBananaResultResponse = ApiResponse<{
+  images: Array<{
+    url: string;
+    content_type: string;
+    file_name: string;
+    file_size: number | null;
   }>;
-}
+  description: string;
+}>;
 
-export interface FalResultResponse extends FalGenerateResponse {
-  request_id: string;
-}
+export type FalGenerateResponse = FluxResultResponse | NanoBananaResultResponse;
+
+export type FalResultResponse = FalGenerateResponse;
 
 export interface FalError {
   error: string;

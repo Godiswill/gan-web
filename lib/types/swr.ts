@@ -20,22 +20,22 @@ export interface FetcherConfig {
   onSuccess?: (data: any) => void;
 }
 
-export interface UseHttpOptions<T = any> extends FetcherConfig {
-  fallbackData?: T;
-  revalidateOnFocus?: boolean;
-  revalidateOnReconnect?: boolean;
-  refreshInterval?: number;
-  dedupingInterval?: number;
-  errorRetryCount?: number;
-  shouldRetryOnError?: boolean | ((err: Error) => boolean);
-  onErrorRetry?: (
-    error: Error,
-    key: string,
-    config: any,
-    revalidate: any,
-    opts: any
-  ) => void;
-}
+// export interface UseHttpOptions<T = any> extends FetcherConfig {
+//   fallbackData?: T;
+//   revalidateOnFocus?: boolean;
+//   revalidateOnReconnect?: boolean;
+//   refreshInterval?: number;
+//   dedupingInterval?: number;
+//   errorRetryCount?: number;
+//   shouldRetryOnError?: boolean | ((err: Error) => boolean);
+//   onErrorRetry?: (
+//     error: Error,
+//     key: string,
+//     config: any,
+//     revalidate: any,
+//     opts: any
+//   ) => void;
+// }
 
 export class HttpError extends Error {
   status: number;

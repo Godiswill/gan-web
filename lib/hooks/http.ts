@@ -1,45 +1,23 @@
 import useSWR, { SWRConfiguration } from 'swr';
-import useSWRMutation from 'swr/mutation';
-import { UseHttpOptions, RequestConfig, HttpError } from '@/lib/types/swr';
+import useSWRMutation, { SWRMutationConfiguration } from 'swr/mutation';
+import { FetcherConfig, RequestConfig, HttpError } from '@/lib/types/swr';
 import { createFetcher } from '@/lib/utils/fetcher';
 
 // 默认 fetcher
-const defaultFetcher = createFetcher({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || '/api',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+// const defaultFetcher = createFetcher({
+//   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || '/api',
+//   headers: {
+//     'Content-Type': 'application/json',
+//   },
+// });
 
 // GET 请求 hook
 export function useGet<T = any>(
   url: string | null,
-  options: UseHttpOptions<T> = {}
+  swrConfig?: SWRConfiguration,
+  fetcherConfig?: FetcherConfig
 ) {
-  const {
-    fallbackData,
-    revalidateOnFocus = true,
-    revalidateOnReconnect = true,
-    refreshInterval,
-    dedupingInterval = 2000,
-    errorRetryCount = 3,
-    shouldRetryOnError = true,
-    onErrorRetry,
-    ...fetcherConfig
-  } = options;
-
   const fetcher = createFetcher(fetcherConfig);
-
-  const swrConfig: SWRConfiguration = {
-    fallbackData,
-    revalidateOnFocus,
-    revalidateOnReconnect,
-    refreshInterval,
-    dedupingInterval,
-    errorRetryCount,
-    shouldRetryOnError,
-    onErrorRetry,
-  };
 
   return useSWR<T>(
     url ? [url, 'GET'] : null,
@@ -51,9 +29,12 @@ export function useGet<T = any>(
 // POST 请求 hook
 export function usePost<T = any, K = any>(
   url: string,
-  options: UseHttpOptions<T> = {}
+  fetcherConfig?: FetcherConfig,
+  swrConfig?: SWRMutationConfiguration<T, Error, string, K> & {
+    throwOnError: false;
+  }
 ) {
-  const fetcher = createFetcher(options);
+  const fetcher = createFetcher(fetcherConfig);
 
   return useSWRMutation<T, Error, string, K>(
     url,
@@ -64,7 +45,7 @@ export function usePost<T = any, K = any>(
       }),
     {
       revalidate: false,
-      ...options,
+      ...swrConfig,
     }
   );
 }
@@ -72,9 +53,12 @@ export function usePost<T = any, K = any>(
 // PUT 请求 hook
 export function usePut<T = any, K = any>(
   url: string,
-  options: UseHttpOptions<T> = {}
+  fetcherConfig?: FetcherConfig,
+  swrConfig?: SWRMutationConfiguration<T, Error, string, K> & {
+    throwOnError: false;
+  }
 ) {
-  const fetcher = createFetcher(options);
+  const fetcher = createFetcher(fetcherConfig);
 
   return useSWRMutation<T, Error, string, K>(
     url,
@@ -85,7 +69,7 @@ export function usePut<T = any, K = any>(
       }),
     {
       revalidate: false,
-      ...options,
+      ...swrConfig,
     }
   );
 }
@@ -93,16 +77,19 @@ export function usePut<T = any, K = any>(
 // DELETE 请求 hook
 export function useDelete<T = any>(
   url: string,
-  options: UseHttpOptions<T> = {}
+  fetcherConfig?: FetcherConfig,
+  swrConfig?: SWRMutationConfiguration<T, Error, string> & {
+    throwOnError: false;
+  }
 ) {
-  const fetcher = createFetcher(options);
+  const fetcher = createFetcher(fetcherConfig);
 
   return useSWRMutation<T, Error, string, void>(
     url,
     (url) => fetcher(url, { method: 'DELETE' }),
     {
       revalidate: false,
-      ...options,
+      ...swrConfig,
     }
   );
 }
@@ -110,9 +97,12 @@ export function useDelete<T = any>(
 // PATCH 请求 hook
 export function usePatch<T = any, K = any>(
   url: string,
-  options: UseHttpOptions<T> = {}
+  fetcherConfig?: FetcherConfig,
+  swrConfig?: SWRMutationConfiguration<T, Error, string, K> & {
+    throwOnError: false;
+  }
 ) {
-  const fetcher = createFetcher(options);
+  const fetcher = createFetcher(fetcherConfig);
 
   return useSWRMutation<T, Error, string, K>(
     url,
@@ -123,7 +113,7 @@ export function usePatch<T = any, K = any>(
       }),
     {
       revalidate: false,
-      ...options,
+      ...swrConfig,
     }
   );
 }
@@ -131,16 +121,22 @@ export function usePatch<T = any, K = any>(
 // 通用 HTTP hook
 export function useHttp<T = any, K = any>(
   url: string | null,
-  config: RequestConfig & UseHttpOptions<T> = {}
+  requestConfig: RequestConfig = { method: 'GET' },
+  swrConfig?:
+    | SWRConfiguration
+    | (SWRMutationConfiguration<T, Error, string, K> & {
+        throwOnError: false;
+      }),
+  fetcherConfig?: FetcherConfig
 ) {
-  const { method = 'GET', ...options } = config;
-  const fetcher = createFetcher(options);
+  const { method = 'GET', ...options } = requestConfig;
+  const fetcher = createFetcher(fetcherConfig, options);
 
   if (method === 'GET') {
     return useSWR<T>(
       url ? [url, method] : null,
       ([url]) => fetcher(url, { method }),
-      options
+      swrConfig as SWRConfiguration
     );
   }
 
@@ -153,7 +149,7 @@ export function useHttp<T = any, K = any>(
       }),
     {
       revalidate: false,
-      ...options,
+      ...(swrConfig as SWRMutationConfiguration<T, Error, string, K>),
     }
   );
 }
@@ -162,12 +158,13 @@ export function useHttp<T = any, K = any>(
 export function useApiWithAuth<T = any>(
   url: string | null,
   token?: string,
-  options: UseHttpOptions<T> = {}
+  swrConfig?: SWRConfiguration,
+  fetcherConfig?: FetcherConfig
 ) {
-  return useGet<T>(url, {
-    ...options,
+  return useGet<T>(url, swrConfig, {
+    ...fetcherConfig,
     headers: {
-      ...(options.headers || {}),
+      ...(fetcherConfig?.headers || {}),
       ...(token && { Authorization: `Bearer ${token}` }),
     },
   });
@@ -177,14 +174,15 @@ export function usePagination<T = any>(
   url: string,
   page: number = 1,
   pageSize: number = 10,
-  options: UseHttpOptions<T> = {}
+  swrConfig?: SWRConfiguration,
+  fetcherConfig?: FetcherConfig
 ) {
-  return useGet<T>(`${url}`, {
-    ...options,
+  return useGet<T>(`${url}`, swrConfig, {
+    ...fetcherConfig,
     params: {
       page,
       pageSize,
-      ...(options.params || {}),
+      ...(fetcherConfig?.params || {}),
     },
   });
 }
