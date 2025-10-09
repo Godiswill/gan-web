@@ -17,7 +17,7 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: '/',
+        source: '/removebg',
         headers: [
           {
             key: 'Cross-Origin-Opener-Policy',
