@@ -52,13 +52,21 @@ export const createFetcher = (
     }
 
     // 处理请求体
-    let processedBody = body;
-    if (body && transformRequest) {
-      processedBody = transformRequest(body);
-    } else if (
+    let processedBody =
+      body && transformRequest ? transformRequest(body) : body;
+
+    // 如果是普通对象，则需要手动设置为 application/json
+    // 数据是以下类型让浏览器自动设置请求头
+    // Formdata → Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryXyz
+    // URLSearchParams → application/x-www-form-urlencoded
+    // Blob → application/octet-stream
+    if (
       body &&
       typeof body === 'object' &&
-      !(body instanceof FormData)
+      !(body instanceof FormData) &&
+      !(body instanceof URLSearchParams) &&
+      !(body instanceof Blob) &&
+      !(body instanceof File)
     ) {
       processedBody = JSON.stringify(body);
       headers['Content-Type'] = 'application/json';

@@ -4,6 +4,7 @@ import { ok, fail } from '@/lib/services/api-response';
 import { ModelId } from '@/lib/types/fal';
 import { uploadFileToFAL } from '../upload/route';
 import { MODELS_MAP } from '../models/route';
+import { MAX_FILES, IMAGE_MAX_SIZE } from '@/lib/utils/const';
 
 fal.config({
   credentials: process.env.FAL_KEY as string,
@@ -12,28 +13,30 @@ fal.config({
 export async function POST(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const isMock = !!searchParams.get('mock');
+  const contentType = request.headers.get('content-type');
 
+  let modelId: ModelId;
+  let prompt: string;
+  let images: File[];
   try {
-    const formData = await request.formData();
+    if (contentType?.includes('multipart/form-data')) {
+      const formData = await request.formData();
+      // 从 FormData 请求
+      modelId = (formData.get('modelId') as ModelId) || 'g1';
+      prompt = (formData.get('prompt') as string)?.trim();
+      images = (formData.getAll('files') as File[])?.slice(0, MAX_FILES);
+    } else {
+      // 无文件发送的是 JSON 请求
+      const data = await request.json();
+      modelId = data.modelId || 'g0';
+      prompt = (data.prompt as string)?.trim();
+      images = [];
+    }
 
-    // 从 FormData 中提取参数
-    const modelId = formData.get('modelId') as ModelId;
-    const model = MODELS_MAP[modelId];
-    const prompt = (formData.get('prompt') as string)?.trim();
-    const images = formData.getAll('files') as File[] | null;
-    // const width = parseInt((formData.get('width') as string) || '1024');
-    // const height = parseInt((formData.get('height') as string) || '1024');
-    // const num_inference_steps = parseInt(
-    //   (formData.get('num_inference_steps') as string) || '28'
-    // );
-    // const guidance_scale = parseFloat(
-    //   (formData.get('guidance_scale') as string) || '3.5'
-    // );
-    // const seed = formData.get('seed')
-    //   ? parseInt(formData.get('seed') as string)
-    //   : undefined;
+    let model = MODELS_MAP[modelId];
 
-    if (!model) {
+    // 如果传了 modelId，但不在列表中，报错
+    if (modelId && !model) {
       return fail(400, 'Invalid parameters', 400);
     }
 
@@ -51,7 +54,7 @@ export async function POST(request: NextRequest) {
           return fail(400, 'Invalid parameters', 400);
         }
         // 单张图片不能超过 5MB
-        if (img.size > 5 * 1024 * 1024) {
+        if (img.size > IMAGE_MAX_SIZE) {
           return fail(400, 'Invalid parameters', 400);
         }
       }
@@ -73,7 +76,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    if (!image_urls.length) {
+    if (['v1', 'g1'].includes(modelId) && !image_urls.length) {
       return fail(400, 'Invalid parameters', 400);
     }
 

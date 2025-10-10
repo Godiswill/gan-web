@@ -33,3 +33,6 @@ export const NUMBER_OF_IMAGES = [
   { label: '3', value: 3 },
   { label: '4', value: 4 },
 ];
+
+export const IMAGE_MAX_SIZE = 5 * 1024 * 1024; // 5MB
+export const MAX_FILES = 5;

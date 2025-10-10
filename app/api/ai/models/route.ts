@@ -22,8 +22,10 @@ export async function GET() {
 }
 
 export const MODELS_MAP = {
-  v0: 'fal-ai/nano-banana/edit',
-  v1: 'fal-ai/flux/dev',
-  v2: 'fal-ai/flux/schnell',
-  v3: 'custom-model/v3',
+  v0: 'fal-ai/nano-banana',
+  v1: 'fal-ai/nano-banana/edit',
+  v2: 'fal-ai/flux/dev',
+  v3: 'fal-ai/flux/schnell',
+  g0: 'fal-ai/gemini-25-flash-image',
+  g1: 'fal-ai/gemini-25-flash-image/edit',
 };
