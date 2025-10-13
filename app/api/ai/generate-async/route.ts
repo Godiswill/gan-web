@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fal } from '@fal-ai/client';
-import { ok, fail } from '@/lib/services/api-response';
+import { ok, fail } from '@/lib/services/apiRes';
+import withAuth from '@/lib/services/withAuth';
 import { ModelId } from '@/lib/types/fal';
 import { uploadFileToFAL } from '../upload/route';
 import { MODELS_MAP } from '../models/route';
@@ -10,24 +11,24 @@ fal.config({
   credentials: process.env.FAL_KEY as string,
 });
 
-export async function POST(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
+export const POST = withAuth(async (req: NextRequest) => {
+  const { searchParams } = new URL(req.url);
   const isMock = !!searchParams.get('mock');
-  const contentType = request.headers.get('content-type');
+  const contentType = req.headers.get('content-type');
 
   let modelId: ModelId;
   let prompt: string;
   let images: File[];
   try {
     if (contentType?.includes('multipart/form-data')) {
-      const formData = await request.formData();
+      const formData = await req.formData();
       // 从 FormData 请求
       modelId = (formData.get('modelId') as ModelId) || 'g1';
       prompt = (formData.get('prompt') as string)?.trim();
       images = (formData.getAll('files') as File[])?.slice(0, MAX_FILES);
     } else {
       // 无文件发送的是 JSON 请求
-      const data = await request.json();
+      const data = await req.json();
       modelId = data.modelId || 'g0';
       prompt = (data.prompt as string)?.trim();
       images = [];
@@ -37,11 +38,11 @@ export async function POST(request: NextRequest) {
 
     // 如果传了 modelId，但不在列表中，报错
     if (modelId && !model) {
-      return fail(400, 'Invalid parameters', 400);
+      return fail(400);
     }
 
     if (!prompt) {
-      return fail(400, 'Invalid parameters', 400);
+      return fail(400);
     }
 
     let image_urls: string[] = [];
@@ -51,11 +52,11 @@ export async function POST(request: NextRequest) {
       for (const img of images) {
         // 图片不能为空
         if (img.size <= 0) {
-          return fail(400, 'Invalid parameters', 400);
+          return fail(400);
         }
         // 单张图片不能超过 5MB
         if (img.size > IMAGE_MAX_SIZE) {
-          return fail(400, 'Invalid parameters', 400);
+          return fail(400);
         }
       }
       image_urls = [];
@@ -72,12 +73,12 @@ export async function POST(request: NextRequest) {
         }
       } catch (error) {
         console.error('参考图片上传失败:', error);
-        return fail(400, 'Upload error', 400);
+        return fail(400, 'BIZ_004');
       }
     }
 
     if (['v1', 'g1'].includes(modelId) && !image_urls.length) {
-      return fail(400, 'Invalid parameters', 400);
+      return fail(400);
     }
 
     if (isMock) {
@@ -107,6 +108,6 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('提交任务失败:', error);
 
-    return fail(500, 'Internal Server Error', 500);
+    return fail(500);
   }
-}
+});

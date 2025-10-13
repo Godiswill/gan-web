@@ -1,6 +1,6 @@
 import useSWR, { SWRConfiguration } from 'swr';
 import useSWRMutation, { SWRMutationConfiguration } from 'swr/mutation';
-import { FetcherConfig, RequestConfig, HttpError } from '@/lib/types/swr';
+import { FetcherConfig, RequestConfig, HttpError } from '@/lib/types/http';
 import { createFetcher } from '@/lib/utils/fetcher';
 
 // 默认 fetcher

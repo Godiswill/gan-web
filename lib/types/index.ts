@@ -1,4 +1,4 @@
-export * from './swr';
+export * from './http';
 export * from './fal';
 
 export enum ImageType {

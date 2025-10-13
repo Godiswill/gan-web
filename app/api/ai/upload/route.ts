@@ -1,18 +1,19 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { fal } from '@fal-ai/client';
-import { ok, fail } from '@/lib/services/api-response';
+import withAuth from '@/lib/services/withAuth';
+import { ok, fail } from '@/lib/services/apiRes';
 
 fal.config({
   credentials: process.env.FAL_KEY as string,
 });
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (req: NextRequest) => {
   try {
-    const formData = await request.formData();
+    const formData = await req.formData();
     const file = formData.get('file') as File;
 
     if (!file) {
-      return fail(400, 'Invalid parameters', 400);
+      return fail(400);
     }
 
     const fileUrl = await fal.storage.upload(file);
@@ -20,9 +21,9 @@ export async function POST(request: NextRequest) {
     return ok(fileUrl);
   } catch (error) {
     console.error('上传失败:', error);
-    return fail(500, 'Internal Server Error', 500);
+    return fail(500);
   }
-}
+});
 
 // 内部上传函数
 export async function uploadFileToFAL(file: File): Promise<string> {

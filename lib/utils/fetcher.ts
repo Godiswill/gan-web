@@ -3,8 +3,10 @@ import {
   RequestConfig,
   ApiError,
   ApiErrorResponse,
-} from '@/lib/types/swr';
+  ErrorStatus,
+} from '@/lib/types/http';
 import { GlobalErrorHandler } from '@/lib/utils/errorHandler';
+import { ERROR_CODE_MAP } from '@/lib/utils/const';
 
 // 通用 fetcher 函数
 export const createFetcher = (
@@ -95,7 +97,7 @@ export const createFetcher = (
         } catch {
           // 如果解析 JSON 失败，使用默认错误信息
           errorInfo = {
-            code: response.status,
+            code: response.status as ErrorStatus,
             message: response.statusText || 'Unknown error',
           };
         }
@@ -104,7 +106,7 @@ export const createFetcher = (
         const error = new ApiError(
           errorInfo.message || `HTTP Error: ${response.status}`,
           errorInfo.code || response.status,
-          response.status,
+          response.status as ErrorStatus,
           errorInfo
         );
 
@@ -142,14 +144,22 @@ export const createFetcher = (
 
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
-          const timeoutError = new ApiError('Request timeout', 'TIMEOUT', 408);
+          const timeoutError = new ApiError(
+            ERROR_CODE_MAP['TIMEOUT'].message,
+            'TIMEOUT',
+            500
+          );
           errorHandler.handle(timeoutError);
           if (onError) onError(timeoutError);
           throw timeoutError;
         }
 
         // 网络错误
-        const networkError = new ApiError('Network error', 'NETWORK_ERROR', 0);
+        const networkError = new ApiError(
+          ERROR_CODE_MAP['NETWORK_ERROR'].message,
+          'NETWORK_ERROR',
+          500
+        );
         errorHandler.handle(networkError);
         if (onError) onError(networkError);
         throw networkError;

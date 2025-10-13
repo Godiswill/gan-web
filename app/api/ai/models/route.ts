@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
-import { ok } from '@/lib/services/api-response';
+import withAuth from '@/lib/services/withAuth';
+import { ok } from '@/lib/services/apiRes';
 
 const AVAILABLE_MODELS = [
   {
@@ -17,9 +17,9 @@ const AVAILABLE_MODELS = [
   // 添加更多模型...
 ];
 
-export async function GET() {
+export const GET = withAuth(async () => {
   return ok(AVAILABLE_MODELS);
-}
+});
 
 export const MODELS_MAP = {
   v0: 'fal-ai/nano-banana',
