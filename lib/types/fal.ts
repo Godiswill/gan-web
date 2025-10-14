@@ -1,7 +1,7 @@
 import { ApiResponse } from './http';
 
 // -- fal --
-export type ModelId = 'v0' | 'v1' | 'v2' | 'v3' | 'g1' | 'g2';
+export type ModelId = 'v0' | 'v1' | 'v2' | 'v3' | 'g0' | 'g1';
 
 export type FalStatusResponse = ApiResponse<{
   status: 'IN_QUEUE' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED';
