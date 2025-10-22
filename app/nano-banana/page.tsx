@@ -3,7 +3,7 @@ import AIEdit from '@/components/AIEdit';
 
 const title = 'Nano Banana - Gemini 2.5 Flash Image';
 const description =
-  'Start exploring and building with Google’s latest AI models. Access Gemini 2.5 Flash, Gemini Pro, and more to create innovative applications and solutions powered by cutting-edge AI technology.';
+  'Start exploring and building with Google’s latest AI models. Access Gemini 2.5 Flash to create innovative applications and solutions powered by cutting-edge AI technology.';
 
 export const metadata: Metadata = {
   title,

@@ -3,9 +3,11 @@ import { fal } from '@fal-ai/client';
 import { ok, fail } from '@/lib/services/apiRes';
 import withAuth from '@/lib/services/withAuth';
 import { ModelId } from '@/lib/types/fal';
-import { uploadFileToFAL } from '../upload/route';
+import { uploadFileCloudFlare } from '../upload/route';
 import { MODELS_MAP } from '../models/route';
 import { MAX_FILES, IMAGE_MAX_SIZE } from '@/lib/utils/const';
+import { mockDelay } from '@/lib/utils';
+import promptMap, { PromptsKey } from '@/lib/db/prompt';
 
 fal.config({
   credentials: process.env.FAL_KEY as string,
@@ -25,6 +27,7 @@ export const POST = withAuth(async (req: NextRequest) => {
       // 从 FormData 请求
       modelId = (formData.get('modelId') as ModelId) || 'g1';
       prompt = (formData.get('prompt') as string)?.trim();
+      prompt = promptMap[prompt as PromptsKey]?.prompt || prompt;
       images = (formData.getAll('files') as File[])?.slice(0, MAX_FILES);
     } else {
       // 无文件发送的是 JSON 请求
@@ -44,6 +47,7 @@ export const POST = withAuth(async (req: NextRequest) => {
     if (!prompt) {
       return fail(400);
     }
+    console.log('prompt: ', prompt);
 
     let image_urls: string[] = [];
     console.log(images);
@@ -63,11 +67,11 @@ export const POST = withAuth(async (req: NextRequest) => {
       try {
         console.log('正在上传参考图片...');
         for (const img of images) {
-          if (isMock) {
-            image_urls.push('https://via.placeholder.com/512');
-            continue;
-          }
-          const image_url = await uploadFileToFAL(img);
+          // if (isMock) {
+          //   image_urls.push('https://via.placeholder.com/512');
+          //   continue;
+          // }
+          const image_url = await uploadFileCloudFlare(img);
           console.log('参考图片上传成功:', image_url);
           image_urls.push(image_url);
         }
@@ -82,6 +86,7 @@ export const POST = withAuth(async (req: NextRequest) => {
     }
 
     if (isMock) {
+      mockDelay();
       return ok({
         request_id: 'mock-request-id',
         model_id: modelId,

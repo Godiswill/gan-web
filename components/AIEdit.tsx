@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import clsx from 'clsx';
 import { z } from 'zod';
-import { NanoBananaSchema } from '@/lib/utils/zod';
+import { getNanoBananaSchema } from '@/lib/utils/zod';
 import {
   CircleQuestionMarkIcon,
   ChevronUpIcon,
@@ -35,15 +35,27 @@ import {
 import { Select2 } from '@/components/ui/select';
 import { OUTPUT_FORMATS, NUMBER_OF_IMAGES, MAX_FILES } from '@/lib/utils/const';
 import { NanoBananaRequest } from '@/lib/types';
+import { PromptsKey } from '@/lib/db/prompt';
 
-const FormSchema = NanoBananaSchema;
-
-export default function Home() {
+export default function AIEdit({
+  prompt,
+  filesRequired,
+}: {
+  prompt?: PromptsKey;
+  filesRequired?: boolean;
+}) {
   const [showMore, setShowMore] = useState(false);
   const { generate, result, isLoading, inferenceTime } =
     useFalAsyncGeneration();
+  const FormSchema = getNanoBananaSchema({
+    promptRequired: !prompt,
+    filesRequired,
+  });
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
+    defaultValues: {
+      prompt,
+    },
   });
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
@@ -51,7 +63,7 @@ export default function Home() {
     await generate({
       ...data,
       // modelId: 'v0',
-      prompt: data.prompt,
+      prompt: prompt || data.prompt,
       files: data.files?.map((it) => it.file),
     } as NanoBananaRequest);
   }
@@ -64,33 +76,35 @@ export default function Home() {
           <h3 className="font-semibold sm:text-xl">Input</h3>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="prompt"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Prompt
-                      <Popover>
-                        <PopoverTrigger>
-                          <CircleQuestionMarkIcon size={16} />
-                        </PopoverTrigger>
-                        <PopoverContent>
-                          The text prompt used to edit the image
-                        </PopoverContent>
-                      </Popover>
-                    </FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="The text prompt used to edit the image"
-                        // className="resize-none"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {!prompt && (
+                <FormField
+                  control={form.control}
+                  name="prompt"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Prompt
+                        <Popover>
+                          <PopoverTrigger>
+                            <CircleQuestionMarkIcon size={16} />
+                          </PopoverTrigger>
+                          <PopoverContent>
+                            The text prompt used to edit the image
+                          </PopoverContent>
+                        </Popover>
+                      </FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="The text prompt used to edit the image"
+                          // className="resize-none"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
               <FormField
                 control={form.control}
                 name="files"

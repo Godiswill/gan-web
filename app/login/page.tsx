@@ -6,7 +6,7 @@ export default async function LoginPage() {
   const session = await auth();
 
   if (session) {
-    console.log(session);
+    // console.log(session);
     redirect('/');
   }
 

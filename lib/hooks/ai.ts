@@ -184,12 +184,12 @@ export function useFalResult(
     }
   );
 
-  console.log({
-    result: data,
-    isLoading,
-    error: error as FalError | undefined,
-    refresh: mutate,
-  });
+  // console.log({
+  //   result: data,
+  //   isLoading,
+  //   error: error as FalError | undefined,
+  //   refresh: mutate,
+  // });
 
   return {
     result: data,

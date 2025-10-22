@@ -1,19 +1,27 @@
 import { z } from 'zod';
 import { IMAGE_MAX_SIZE, MAX_FILES } from '@/lib/utils/const';
 
-export const NanoBananaSchema = z.object({
-  prompt: z.string().trim().min(8, {
-    message: 'This field is required',
-  }),
-  files: z
+export const getNanoBananaSchema = ({
+  promptRequired = true,
+  filesRequired,
+  maxFiles = 1,
+}: {
+  promptRequired?: boolean;
+  filesRequired?: boolean;
+  maxFiles?: number;
+}) => {
+  const prompt = z.string('Prompt is required').trim();
+  const files = z
     .array(
       z.object({
         file: z.instanceof(File),
         width: z.number().positive('Width must be positive'),
         height: z.number().positive('Height must be positive'),
-      })
+      }),
+      'Please select your photos'
     )
-    .max(MAX_FILES, `You can upload up to ${MAX_FILES} files`)
+    .min(1, 'At least one file is required')
+    .max(maxFiles, `You can upload up to ${maxFiles} files`)
     .refine(
       (files) => files.every((f) => f.file.size <= IMAGE_MAX_SIZE),
       `Each file must be less than ${IMAGE_MAX_SIZE / (1024 * 1024)}MB`
@@ -21,14 +29,21 @@ export const NanoBananaSchema = z.object({
     .refine(
       (files) => files.every((f) => /^image\//.test(f.file.type)),
       'Only images are allowed'
-    )
-    .optional(),
-  output_format: z.enum(['jpeg', 'png']).optional(),
-  num_images: z.number().optional(),
-});
+    );
+  return z.object({
+    prompt: promptRequired
+      ? prompt.min(1, {
+          message: 'This field is required',
+        })
+      : prompt.optional(),
+    files: filesRequired ? files : files.optional(),
+    output_format: z.enum(['jpeg', 'png']).optional(),
+    num_images: z.number().optional(),
+  });
+};
 
 export const NanoBananaSchemaEdit = z.object({
-  prompt: z.string().trim().min(8, {
+  prompt: z.string().trim().min(1, {
     message: 'This field is required',
   }),
   files: z
