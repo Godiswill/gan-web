@@ -3,7 +3,7 @@ import { fal } from '@fal-ai/client';
 import { ok, fail } from '@/lib/services/apiRes';
 import withAuth from '@/lib/services/withAuth';
 import { ModelId } from '@/lib/types/fal';
-import { uploadFileCloudFlare } from '../upload/route';
+import { uploadToCloudFlare } from '../upload/util';
 import { MODELS_MAP } from '../models/route';
 import { MAX_FILES, IMAGE_MAX_SIZE } from '@/lib/utils/const';
 import { mockDelay } from '@/lib/utils';
@@ -71,7 +71,7 @@ export const POST = withAuth(async (req: NextRequest) => {
           //   image_urls.push('https://via.placeholder.com/512');
           //   continue;
           // }
-          const image_url = await uploadFileCloudFlare(img);
+          const image_url = await uploadToCloudFlare(img, 'tmp');
           console.log('参考图片上传成功:', image_url);
           image_urls.push(image_url);
         }
@@ -104,6 +104,7 @@ export const POST = withAuth(async (req: NextRequest) => {
         // guidance_scale,
         // seed,
       },
+      webhookUrl: `${process.env.NEXT_PUBLIC_API_BASE}/ai/webhook`,
     });
 
     return ok({
