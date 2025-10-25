@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { fal } from '@fal-ai/client';
 import withAuth from '@/lib/services/withAuth';
 import { ok, fail } from '@/lib/services/apiRes';
-import { uploadFileToFAL } from '../upload/route';
+import { uploadToCloudFlare } from '../upload/util';
 
 fal.config({
   credentials: process.env.FAL_KEY as string,
@@ -41,7 +41,7 @@ export const POST = withAuth(async (request: NextRequest) => {
     if (referenceImage && referenceImage.size > 0) {
       try {
         console.log('正在上传参考图片...');
-        image_url = await uploadFileToFAL(referenceImage);
+        image_url = await uploadToCloudFlare(referenceImage, 'tmp');
         console.log('参考图片上传成功:', image_url);
       } catch (error) {
         console.error('参考图片上传失败:', error);
