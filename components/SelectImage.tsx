@@ -1,10 +1,11 @@
 'use client';
 
-import Image from 'next/image';
+// import Image from 'next/image';
 import { useState, useEffect, useRef, useCallback, useId } from 'react';
 // import { CloudUploadIcon } from '@/components/svg';
 import { CloudUploadIcon } from 'lucide-react';
 import { exampleImgs, smallModelKey, inputId } from '@/lib/utils/const';
+import ImageWithSkeleton from '@/components/ImageWithSkeleton';
 
 export default function SelectImage({
   onChange,
@@ -175,13 +176,11 @@ export default function SelectImage({
             ></div>
           </div>
           {exampleImgs.map(({ src, alt }) => (
-            <Image
+            <ImageWithSkeleton
               key={src}
-              className="w-13 md:w-16 rounded-md cursor-pointer"
               src={src}
               alt={alt}
-              width={600}
-              height={600}
+              className="w-13 h-13 md:w-16 md:h-16 rounded-md cursor-pointer"
             />
           ))}
         </div>
