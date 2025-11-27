@@ -10,6 +10,7 @@ import { isMobileDevice } from '@/lib/utils/remover/utils';
 import { ImageType } from '@/lib/types';
 import PreviewDownload from '@/components/PreviewDownload';
 import SelectImage from '@/components/SelectImage';
+import { Select2 } from '@/components/ui/select';
 
 export default function RemoveBg() {
   const [isLoading, setIsLoading] = useState(false);
@@ -79,7 +80,8 @@ export default function RemoveBg() {
           ...(model
             ? {
                 mInfo: {
-                  modelUrl: `/_models/${model}`,
+                  // modelUrl: `/_models/${model}`,
+                  modelUrl: `https://cdn.bgg.one/remove-bg/model/${model}`,
                   size: 320,
                   inputKey: 'input.1',
                 },
@@ -168,7 +170,18 @@ export default function RemoveBg() {
                 </span>
                 <div className="flex items-center gap-2">
                   <label>Output format:</label>
-                  <select
+                  <Select2
+                    defaultValue={ImageType.PNG}
+                    className="w-32"
+                    placeholder="Select output format"
+                    items={Object.values(ImageType).map((t) => ({
+                      label: t,
+                      value: t,
+                    }))}
+                    value={format}
+                    onChange={(v) => setFormat(v as ImageType)}
+                  />
+                  {/* <select
                     className="px-3 py-1 rounded-lg bg-white/20 border border-black/30"
                     value={format}
                     onChange={(e) => setFormat(e.target.value as ImageType)}
@@ -178,7 +191,7 @@ export default function RemoveBg() {
                         {t}
                       </option>
                     ))}
-                  </select>
+                  </select> */}
                 </div>
               </div>
               <div className="flex gap-4">

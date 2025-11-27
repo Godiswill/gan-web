@@ -13,16 +13,17 @@ const ConfigSchema = z
       .string()
       .describe('The public path to the wasm files and the onnx model.')
       .default(
-        'https://staticimgly.com/@imgly/background-removal-data/${PACKAGE_VERSION}/dist/'
+        // 'https://staticimgly.com/@imgly/background-removal-data/${PACKAGE_VERSION}/dist/'
+        'https://cdn.bgg.one/remove-bg/model/1.5.3/'
       )
-      .transform((val) => {
-        return (
-          val
-            // .replace('${PACKAGE_NAME}', pkg.name)
-            // .replace('${PACKAGE_VERSION}', pkg.version);
-            .replace('${PACKAGE_VERSION}', '1.5.3')
-        );
-      })
+      // .transform((val) => {
+      //   return (
+      //     val
+      //       // .replace('${PACKAGE_NAME}', pkg.name)
+      //       // .replace('${PACKAGE_VERSION}', pkg.version);
+      //       .replace('${PACKAGE_VERSION}', '1.5.3')
+      //   );
+      // })
       .optional(),
     debug: z
       .boolean()
